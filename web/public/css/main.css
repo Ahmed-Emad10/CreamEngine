@@ -5,13 +5,13 @@ body{
     margin: 0px;
 }
 
-#SearchArea{
+ #SearchArea{
     height: 100vh;
     display: flex;
     justify-content: center;
     flex-direction: column;
     align-items: center;
-}
+} 
 
 form{
     display: flex;
@@ -23,7 +23,6 @@ form{
     margin: 15px;
     display: flex;
     justify-content: baseline;
-    overflow: hidden;
     padding: 5px;
     background-color: #FFF;
     

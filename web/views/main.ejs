@@ -37,7 +37,9 @@
                     <path d="M24.3801 12.2713C23.7074 10.5204 22.536 9.02336 20.9926 7.94219C19.4124 6.83516 17.5563 6.25 15.625 6.25C15.1936 6.25 14.8438 6.59984 14.8438 7.03125C14.8438 7.46266 15.1936 7.8125 15.625 7.8125C18.8359 7.8125 21.7681 9.82953 22.9216 12.8318C23.0409 13.1424 23.337 13.333 23.651 13.333C23.7442 13.333 23.8389 13.3162 23.931 13.2809C24.3338 13.1261 24.5349 12.6741 24.3801 12.2713Z" fill="black"/>
                     </svg>
                 
-                <input type="text" id="textbox" name="searchTopic" required>
+                <input type="text" id="textbox" name="searchTopic" list="suggestions" autocomplete="off" required>
+                <datalist id="suggestions">
+                </datalist>
             </div>
             <button type="submit" id="submit">Search</button>
         </form>

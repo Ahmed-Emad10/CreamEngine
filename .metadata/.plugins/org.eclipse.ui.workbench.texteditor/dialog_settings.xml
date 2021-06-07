@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item key="selection" value="PreparedStatement myStat = myConn.prepareStatement(t1);"/>
+		<list key="findhistory">
+			<item value="PreparedStatement myStat = myConn.prepareStatement(t1);"/>
+		</list>
+	</section>
+</section>

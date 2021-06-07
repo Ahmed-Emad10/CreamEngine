@@ -10,6 +10,8 @@ app.listen(port,()=>console.info(`Listening on port ${port}`))
 //import {stemmer} from 'stemmer'              //sa
 var natural = require('natural');             //ma
 
+
+
 var myConnection = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -26,7 +28,8 @@ myConnection.connect(function(err) {
 var searchtopic;    //search value
 var arrRes=[];      //to store query results
 var results=[];
-
+var recomendations=[]
+var ret=[];
 
 app.use(express.static('public'))
 app.use('/css',express.static(__dirname + 'public/css'))
@@ -39,12 +42,34 @@ app.get('',(req, res)=>{
     res.render('main')
 })
 
+app.get('/',(req, res)=>{
+    res.render('main')
+})
+
 app.post('/search', urlencodedParser,(req,res)=>{
     searchtopic=req.body.searchTopic;
-    console.log(searchtopic)
-    console.log(natural.PorterStemmer.stem('adidas'))
+   // console.log(searchtopic)
+   searchtopic=stemmer(searchtopic) 
 
-    console.log(stemmer('adidas'))
+   var sql3 = ` SELECT * FROM suggestions
+                WHERE sugg_word='${req.body.searchTopic}';`;
+    
+    ret=[]
+    
+    myConnection.query(sql3, async(error,ret,fields) => {
+        if (error) res.send(error)
+        console.log(ret)
+        if(ret.length==0) {
+            var sql2 = ` INSERT INTO suggestions
+                            VALUES('${req.body.searchTopic}');`;
+                            
+                myConnection.query(sql2, async(error) => {
+                    if (error) res.send(error)
+                } )
+        }
+        
+    } )
+
     
 
     var sql = ` SELECT doc_id,title,link,des 
@@ -54,31 +79,14 @@ app.post('/search', urlencodedParser,(req,res)=>{
                 WHERE word='${searchtopic}' ;`;
 
     myConnection.query(sql, async(error, arrRes, fields) => {
-        //console.log(arrRes.length)
-        // console.log(arrRes[1])
+        console.log(arrRes.length)
 
         if (error) res.send(error);
         if (!arrRes[0]) {
              res.json("Not Found");
         } 
 
-        // for(var i=0 ; i<arrRes.length; i++){
-
-        //     results.push({ doc_id:arrRes[i].doc_id, title:arrRes[i].title, link:arrRes[i].link, des:arrRes[i].des });
-        //     // console.log("pushhhhhhhhhhhhhhhhhed")
-        //     //console.log(arrRes[i].doc_id)
-
-        //     //  console.log({
-        //     //     doc_id:arrRes[i].doc_id,
-        //     //     title:arrRes[i].title,
-        //     //     link:arrRes[i].link,
-        //     //     des:arrRes[i].des
-        //     //  })
-            
-        // }
-        // console.log(results)
-
-        console.log(arrRes)
+        //console.log(arrRes)
         var returned = arrRes.slice(0,10)
         res.render('Results',{ result:returned, page:"1" })
     })
@@ -86,14 +94,76 @@ app.post('/search', urlencodedParser,(req,res)=>{
 })
 
 app.post('/next', urlencodedParser,(req,res)=>{
-    console.log(req.body)
-    var returned = arrRes.slice((req.body.pageNum-1)*10,(req.body.pageNum-1)*10+10)
-   // if(!arrRes[(req.body.pageNum-1)*10])
-    res.render('Results',{ result:returned, page:req.body.pageNum })
+
+
+    var sql = ` SELECT doc_id,title,link,des 
+                FROM Pages
+                join Words 
+                on doc_id=id
+                WHERE word='${searchtopic}' ;`;
+
+    myConnection.query(sql, async(error, arrRes, fields) => {
+        console.log(arrRes.length)
+
+        if (error) res.send(error);
+        if (!arrRes[0]) {
+             res.json("Not Found");
+        } 
+
+        var returned = arrRes.slice((req.body.pageNum-1)*10,(req.body.pageNum-1)*10+10)
+        if(arrRes[(req.body.pageNum-1)*10]){
+            res.render('Results',{ result:returned, page:req.body.pageNum })
+        }
+        else{
+            res.render('Results',{ result:"", page:req.body.pageNum })
+        }
+        
+    })
+    
 })
 app.post('/back', urlencodedParser,(req,res)=>{
-    console.log(req.body)
-    var returned = arrRes.slice((req.body.pageNum-1)*10,(req.body.pageNum-1)*10+10)
-    res.render('Results',{ result:returned, page:req.body.pageNum })
+
+    var sql = ` SELECT doc_id,title,link,des 
+                FROM Pages
+                join Words 
+                on doc_id=id
+                WHERE word='${searchtopic}' ;`;
+
+    myConnection.query(sql, async(error, arrRes, fields) => {
+        console.log(arrRes.length)
+
+        if (error) res.send(error);
+        if (!arrRes[0]) {
+             res.json("Not Found");
+        } 
+
+        var returned = arrRes.slice((req.body.pageNum-1)*10,(req.body.pageNum-1)*10+10)
+        res.render('Results',{ result:returned, page:req.body.pageNum })
+        
+    })
+    
 })
 
+app.post('/suggest/:params',urlencodedParser,(req,res)=>{
+    var reqWord=req.url.slice(9,req.url.length);
+    recomendations=[]
+    results=[]
+
+    if(reqWord.length!=0){
+
+        var sql4 = ` SELECT * FROM suggestions
+                WHERE sugg_word LIKE "${reqWord}%";`;
+    
+        myConnection.query(sql4, async(error,recomendations,fields) => {
+            if (error) res.send(error)
+            for(var i=0 ; i<recomendations.length; i++){
+                 results.push({ sugg_word:recomendations[i].sugg_word});
+            }
+            res.send(JSON.stringify(results));
+        } )
+
+    }
+    else{
+        res.send("");
+    }
+});

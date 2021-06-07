@@ -37,11 +37,9 @@ p{
     margin: 15px;
     display: flex;
     justify-content: baseline;
-    overflow: hidden;
     padding: 5px;
     background-color: #FFF;
     width: 30vw;
-    
 }
 form{
     display: flex;
